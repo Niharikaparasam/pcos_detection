@@ -1,39 +1,27 @@
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
-import pickle
-import numpy as np
 
-app = Flask(__name__)
-CORS(app)  # Allow all origins — fixes CORS error
+app = Flask(__name__, static_folder='.', static_url_path='')
+CORS(app)  # Enables CORS for all domains
 
-# Serve frontend HTML
 @app.route('/')
-def index():
+def serve_index():
     return send_from_directory('.', 'index.html')
 
-# Prediction API endpoint
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json(force=True)
-    
-    features = [
-        data["Age"],
-        data["BMI"],
-        data["Cycle"],
-        data["Weight_gain"],
-        data["Hair_growth"],
-        data["Skin_darkening"],
-        data["Hair_loss"],
-        data["Pimples"],
-        data["TSH"],
-        data["Follicle_L"],
-        data["Follicle_R"]
-    ]
+    try:
+        data = request.get_json()
 
-    model = pickle.load(open("pcos_model.pkl", "rb"))
-    prediction = model.predict([features])[0]
+        # Sample dummy prediction logic (replace this with your actual ML model prediction)
+        if data['BMI'] > 25:
+            result = 'Positive'
+        else:
+            result = 'Negative'
 
-    return jsonify({'prediction': int(prediction)})
+        return jsonify({'prediction': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
